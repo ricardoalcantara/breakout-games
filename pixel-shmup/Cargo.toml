@@ -1,0 +1,17 @@
+[package]
+name = "pixel-shmup"
+version = "0.1.0"
+edition = "2021"
+
+[workspace]
+members = [
+    "tiled",
+]
+
+
+[dependencies]
+# breakout_engine = { git = "https://github.com/ricardoalcantara/breakout-engine" }
+breakout_engine = { path = "../../breakout-engine" }
+tiled = { path = "./tiled" }
+log = "0.4.14"
+pretty_env_logger = "0.4.0"
