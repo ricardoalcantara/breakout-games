@@ -1823,6 +1823,7 @@ dependencies = [
 name = "tiled"
 version = "0.1.0"
 dependencies = [
+ "breakout_engine",
  "serde",
  "serde_json",
 ]
