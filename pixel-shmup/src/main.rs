@@ -10,7 +10,7 @@ use breakout_engine::{
     },
     ecs,
     error::BreakoutResult,
-    math,
+    math::{self, Vec2},
     shapes::rectangle::Rect,
 };
 use tiled::Tiled;
@@ -18,7 +18,10 @@ use tiled::Tiled;
 extern crate log;
 extern crate pretty_env_logger;
 
-struct Player;
+struct Player {
+    direction: math::Vec2,
+    speed: f32,
+}
 
 struct MainState {
     map: Option<Tiled>,
@@ -27,6 +30,27 @@ struct MainState {
 impl MainState {
     fn new() -> Self {
         Self { map: None }
+    }
+}
+
+trait Math {
+    fn rotate(&self, angle: f32) -> math::Vec2;
+}
+
+impl Math for math::Vec2 {
+    fn rotate(&self, angle: f32) -> math::Vec2 {
+        let normalized = self.normalize();
+        let _x = normalized.x;
+        let _y = normalized.y;
+
+        let _angle = angle.to_radians();
+        let _cos = _angle.cos();
+        let _sin = _angle.sin();
+
+        let _x2 = _x * _cos - _y * _sin;
+        let _y2 = _x * _sin + _y * _cos;
+
+        return math::vec2(_x2, _y2);
     }
 }
 
@@ -56,7 +80,10 @@ impl Scene for MainState {
         transform.set_pixel_snap(true);
 
         world.spawn((
-            Player,
+            Player {
+                direction: math::vec2(0.0, 1.0),
+                speed: 50.0,
+            },
             Sprite {
                 texture_id: Some(ships),
                 sub_texture: Some(SubTexture::new(Rect::new(0.0, 0.0, 32.0, 32.0))),
@@ -91,12 +118,12 @@ impl Scene for MainState {
     ) -> BreakoutResult<Transition> {
         let mut direction = math::Vec2::ZERO;
 
-        if _input.is_key_pressed(VirtualKeyCode::Up) {
-            direction.y = -1.0;
-        }
-        if _input.is_key_pressed(VirtualKeyCode::Down) {
-            direction.y = 1.0;
-        }
+        // if _input.is_key_pressed(VirtualKeyCode::Up) {
+        //     direction.y = -1.0;
+        // }
+        // if _input.is_key_pressed(VirtualKeyCode::Down) {
+        //     direction.y = 1.0;
+        // }
         if _input.is_key_pressed(VirtualKeyCode::Left) {
             direction.x = -1.0;
         }
@@ -111,28 +138,29 @@ impl Scene for MainState {
 
         let world = &mut _context.get_world();
 
-        for (_id, (transform, camera)) in
-            &mut world.query::<ecs::With<Player, (&mut Transform2D, &mut Camera2D)>>()
+        for (_id, (player, transform, camera)) in
+            &mut world.query::<(&mut Player, &mut Transform2D, &mut Camera2D)>()
         {
-            transform.translate(direction * 100.0 * _dt);
+            player.direction = player.direction.rotate(direction.x * player.speed * _dt);
 
-            let mut position = transform.position();
+            transform.translate(player.direction * player.speed * _dt);
+            transform.set_rotate(-player.direction.angle_between(math::vec2(0.0, 1.0)));
 
-            if position.x < 0.0 {
-                position.x = 0.0;
-            }
-            if position.y < 0.0 {
-                position.y = 0.0;
-            }
-            transform.set_position(position);
+            // let mut position = transform.position();
 
-            transform.set_rotate(transform.rotate() + _dt);
+            // if position.x < 0.0 {
+            //     position.x = 0.0;
+            // }
+            // if position.y < 0.0 {
+            //     position.y = 0.0;
+            // }
+            // transform.set_position(position);
 
-            if transform.rotate() > std::f32::consts::TAU {
-                transform.set_rotate(std::f32::consts::TAU - transform.rotate());
-            }
+            // if transform.rotate() > std::f32::consts::TAU {
+            //     transform.set_rotate(std::f32::consts::TAU - transform.rotate());
+            // }
 
-            let camera_rect = camera.get_view_rect(&_engine.window_size(), &transform.position());
+            // let camera_rect = camera.get_view_rect(&_engine.window_size(), &transform.position());
 
             // if camera_rect.x < 0.0 {
             //     camera.offset.x = -camera_rect.x as i32;
