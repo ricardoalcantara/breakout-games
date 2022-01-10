@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use breakout_engine::{
     core::{
         asset_manager::TextureId,
-        components::{Camera2D, Sprite, Transform2D},
+        components::{Camera2D, Sprite, SubTexture, Transform2D},
         engine_context::EngineContext,
         game_context::GameContext,
     },
@@ -65,7 +65,7 @@ impl Tiled {
                     Tile { size: tile_size },
                     Sprite {
                         texture_id: Some(texture.clone()),
-                        rect: Some(Rect::new(
+                        sub_texture: Some(SubTexture::new(Rect::new(
                             ((tile_x * tile_size.x as u32)
                                 + (tile_x * tileset.spacing)
                                 + tileset.margin) as f32,
@@ -74,13 +74,10 @@ impl Tiled {
                                 + tileset.margin) as f32,
                             tile_size.x,
                             tile_size.y,
-                        )),
+                        ))),
                         ..Default::default()
                     },
-                    Transform2D {
-                        position: math::vec2(x * 16.0, y * 16.0),
-                        ..Default::default()
-                    },
+                    Transform2D::from_position(math::vec2(x * 16.0, y * 16.0)),
                 ));
 
                 x += 1.0;
@@ -102,7 +99,7 @@ impl Tiled {
                 &mut world.query::<(&mut Sprite, &Tile, &Transform2D)>()
             {
                 sprite.visible = camera.intersects(&Rect::from_position_size(
-                    transform.position.into(),
+                    transform.position().into(),
                     tile.size.into(),
                 ));
             }

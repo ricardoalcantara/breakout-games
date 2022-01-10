@@ -7,26 +7,10 @@
         {
             "type": "lldb",
             "request": "launch",
-            "name": "Debug unit tests in library 'tiled'",
-            "cargo": {
-                "args": [
-                    "test",
-                    "--no-run",
-                    "--lib",
-                    "--package=tiled"
-                ],
-                "filter": {
-                    "name": "tiled",
-                    "kind": "lib"
-                }
-            },
-            "args": [],
-            "cwd": "${workspaceFolder}"
-        },
-        {
-            "type": "lldb",
-            "request": "launch",
             "name": "Debug executable 'pixel-shmup'",
+            "env": {
+                "RUST_LOG": "info"
+            },
             "cargo": {
                 "args": [
                     "build",
@@ -41,24 +25,5 @@
             "args": [],
             "cwd": "${workspaceFolder}"
         },
-        {
-            "type": "lldb",
-            "request": "launch",
-            "name": "Debug unit tests in executable 'pixel-shmup'",
-            "cargo": {
-                "args": [
-                    "test",
-                    "--no-run",
-                    "--bin=pixel-shmup",
-                    "--package=pixel-shmup"
-                ],
-                "filter": {
-                    "name": "pixel-shmup",
-                    "kind": "bin"
-                }
-            },
-            "args": [],
-            "cwd": "${workspaceFolder}"
-        }
     ]
 }

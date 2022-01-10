@@ -1,7 +1,7 @@
 use breakout_engine::{
     core::{
         asset_manager::AssetManager,
-        components::{AnchorMode, Camera2D, Sprite, Transform2D},
+        components::{AnchorMode, Camera2D, Sprite, SubTexture, Transform2D},
         engine::{EngineBuilder, EngineSettings},
         engine_context::EngineContext,
         game_context::GameContext,
@@ -52,11 +52,15 @@ impl Scene for MainState {
 
         let world = &mut _context.get_world();
 
+        let mut transform = Transform2D::new();
+        transform.set_pixel_snap(true);
+
         world.spawn((
             Player,
             Sprite {
                 texture_id: Some(ships),
-                rect: Some(Rect::new(0.0, 0.0, 32.0, 32.0)),
+                sub_texture: Some(SubTexture::new(Rect::new(0.0, 0.0, 32.0, 32.0))),
+                center_origin: true,
                 ..Default::default()
             },
             Camera2D {
@@ -64,10 +68,7 @@ impl Scene for MainState {
                 anchor_mode: AnchorMode::Center,
                 ..Camera2D::keep_width(400)
             },
-            Transform2D {
-                pixel_snap: true,
-                ..Default::default()
-            },
+            transform,
         ));
         Ok(())
     }
@@ -113,16 +114,25 @@ impl Scene for MainState {
         for (_id, (transform, camera)) in
             &mut world.query::<ecs::With<Player, (&mut Transform2D, &mut Camera2D)>>()
         {
-            transform.position += direction * 100.0 * _dt;
+            transform.translate(direction * 100.0 * _dt);
 
-            if transform.position.x < 0.0 {
-                transform.position.x = 0.0;
+            let mut position = transform.position();
+
+            if position.x < 0.0 {
+                position.x = 0.0;
             }
-            if transform.position.y < 0.0 {
-                transform.position.y = 0.0;
+            if position.y < 0.0 {
+                position.y = 0.0;
+            }
+            transform.set_position(position);
+
+            transform.set_rotate(transform.rotate() + _dt);
+
+            if transform.rotate() > std::f32::consts::TAU {
+                transform.set_rotate(std::f32::consts::TAU - transform.rotate());
             }
 
-            let camera_rect = camera.get_view_rect(&_engine.window_size(), &transform.position);
+            let camera_rect = camera.get_view_rect(&_engine.window_size(), &transform.position());
 
             // if camera_rect.x < 0.0 {
             //     camera.offset.x = -camera_rect.x as i32;
